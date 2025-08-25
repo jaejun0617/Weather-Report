@@ -96,8 +96,3 @@ http://scripts.sil.org/OFL
       url(./woff2/Pretendard-Thin.woff2) format('woff2'),
       url(./woff/Pretendard-Thin.woff) format('woff');
 }
-
-body {
-   font-family: 'Pretendard-Black';
-   position: relative;
-}

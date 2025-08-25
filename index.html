@@ -7,10 +7,81 @@
       <link rel="stylesheet" href="./css/common.css" />
       <link rel="stylesheet" href="./css/components.css" />
       <link rel="stylesheet" href="./css/layout.css" />
+      <link rel="stylesheet" href="./assets/font/pretendard.css" />
       <title>Weather-Report</title>
    </head>
    <body>
-      <h2>Hello World!</h2>
+      <header>
+         <nav class="pc-menu">
+            <div class="logo">
+               <img src="./assets/icons/logo.jpg" alt="" />
+            </div>
+            <ul>
+               <li><a href="#">Menu</a></li>
+               <li><a href="#">Menu</a></li>
+               <li><a href="#">Menu</a></li>
+               <li><a href="#">Menu</a></li>
+               <li><a href="#">Menu</a></li>
+            </ul>
+            <div class="m-menu">
+               <img src="./assets/icons/menubar_white.svg" alt="모바일 메뉴" />
+            </div>
+         </nav>
+      </header>
+
+      <main>
+         <section class="main-container">
+            <div class="main-bg">
+               <div class="header-title-text">
+                  <h2>오늘, 어떤 하루를 계획하고 계신가요?</h2>
+                  <p>
+                     당신의 소중한 하루가 날씨 때문에 망설여지지 않도록, <br />
+                     가장 필요한 정보를 미리 챙겨드릴게요.
+                  </p>
+               </div>
+            </div>
+         </section>
+
+         <section class="today-container">
+            <div class="weather-card-container">
+               <div class="weather-card-glass">
+                  <!-- 이 안에 날씨 정보들이 들어갑니다 -->
+                  <p>현재 온도: 28°</p>
+               </div>
+            </div>
+         </section>
+         <section></section>
+         <section></section>
+      </main>
+      <nav>
+         <ul class="m-footer-menu">
+            <li>
+               <a href="#">
+                  <img src="./assets/icons/weather-condition.png" alt="오늘의 날씨" />
+               </a>
+            </li>
+            <li>
+               <a href="#">
+                  <img src="./assets/icons/weekly-forecast.png" alt="주간 날씨" />
+               </a>
+            </li>
+            <li>
+               <a href="./index.html">
+                  <img src="./assets/icons/home.png" alt="메인 홈" />
+               </a>
+            </li>
+            <li>
+               <a href="#">
+                  <img src="./assets/icons/air-quality.png" alt="미세먼지" />
+               </a>
+            </li>
+            <li>
+               <a href="#">
+                  <img src="./assets/icons/favorite.png" alt="즐겨찾기" />
+               </a>
+            </li>
+         </ul>
+      </nav>
       <script src="./js/main.js"></script>
    </body>
 </html>

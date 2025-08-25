@@ -1,0 +1,90 @@
+header {
+   width: 100%;
+   height: 5vh;
+   position: fixed;
+   z-index: 99999;
+}
+
+.main-container {
+   width: 100%;
+   height: 100vh;
+   position: relative;
+   display: flex;
+}
+
+.main-bg {
+   width: 100%;
+   height: 100%;
+   background-image: url(../assets/images/main-banner/main-bg.jpeg);
+   background-position: center center;
+   background-repeat: no-repeat;
+   background-size: cover;
+   position: relative;
+   padding: 5rem 2rem;
+}
+
+.main-bg::before {
+   content: '';
+   position: absolute;
+   top: 0;
+   left: 0;
+   width: 100%;
+   height: 100%;
+   background-color: rgba(0, 0, 0, 0.3);
+   z-index: 1;
+}
+
+.today-container {
+   width: 100%;
+   height: 100vh;
+   background-image: url(../assets/images/section02/section02-bg-01.jpeg);
+   background-position: center center;
+   background-repeat: no-repeat;
+   background-size: cover;
+   position: relative;
+   background-attachment: fixed;
+}
+.weather-card-container {
+   width: 100%;
+   height: 100%;
+   padding: 0rem 2rem;
+}
+
+@media (min-width: 350px) {
+   body {
+      position: relative;
+   }
+   header {
+      width: 100%;
+      height: 7vh;
+      position: fixed;
+      z-index: 99999;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+   }
+   .main-container {
+      width: 100%;
+      height: 45vh;
+      position: relative;
+      display: flex;
+   }
+   .main-bg {
+      width: 100%;
+      height: 100%;
+      padding: 0rem 1rem;
+   }
+   .today-container {
+      width: 100%;
+      height: 46.5vh;
+      background-image: url(../assets/images/section02/section02-bg-01.jpeg);
+      background-position: center center;
+      background-repeat: no-repeat;
+      background-size: cover;
+      position: relative;
+      background-attachment: fixed;
+   }
+   .weather-card-container {
+      width: 100%;
+      height: 100%;
+      padding: 0rem 2rem;
+   }
+}
