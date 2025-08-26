@@ -350,7 +350,7 @@ document.addEventListener('DOMContentLoaded', () => {
                   fill: true, // 선 아래 영역을 채울지 여부
                   pointBackgroundColor: '#ff6b6b', // 각 데이터 지점의 색상
                   pointBorderColor: '#fff', // 지점의 테두리 색상
-                  pointHoverRadius: 6, // 마우스 올렸을 때 지점 크기
+                  pointHoverRadius: 10, // 마우스 올렸을 때 지점 크기
                },
             ],
          },
