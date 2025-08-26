@@ -40,8 +40,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const weatherUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=${API_KEY}&units=metric&lang=kr`;
       const airPollutionUrl = `https://api.openweathermap.org/data/2.5/air_pollution?lat=${latitude}&lon=${longitude}&appid=${API_KEY}`;
+      const forecastUrl = `https://api.openweathermap.org/data/2.5/forecast?lat=${latitude}&lon=${longitude}&appid=${API_KEY}&units=metric&lang=kr`;
 
-      Promise.all([fetch(weatherUrl), fetch(airPollutionUrl)])
+      Promise.all([fetch(weatherUrl), fetch(airPollutionUrl), fetch(forecastUrl)])
          .then(responses =>
             Promise.all(
                responses.map(response => {
@@ -52,7 +53,7 @@ document.addEventListener('DOMContentLoaded', () => {
                }),
             ),
          )
-         .then(([weatherData, airData]) => {
+         .then(([weatherData, airData, forecastData]) => {
             // ----- 3-1. 날씨 데이터 처리 -----
             if (weatherData && weatherData.main && weatherData.weather && weatherData.wind) {
                const currentTemp = weatherData.main.temp;
@@ -147,6 +148,13 @@ document.addEventListener('DOMContentLoaded', () => {
                }
             } else {
                console.error('대기 질 API 응답 데이터 형식이 올바르지 않습니다.', airData);
+            }
+            if (forecastData && forecastData.list) {
+               // 슬라이더 함수 호출
+               updateHourlyForecast(forecastData.list);
+
+               // 그래프 함수 호출
+               drawTempChart(forecastData.list);
             }
          })
          .catch(error => {
@@ -270,5 +278,118 @@ document.addEventListener('DOMContentLoaded', () => {
       if (timeElement) {
          timeElement.innerText = `${hours}:${minutes}:${seconds}`;
       }
+   }
+
+   /* 시간별 예보 */
+   function updateHourlyForecast(forecastList) {
+      const sliderTrack = document.querySelector('.slider-track');
+
+      // 앞으로 24시간 예보를 위한 배열을 자르기
+      const next24Hours = forecastList.slice(0, 8);
+
+      let hourlyHtml = ''; // 카드 담을 빈 문자열
+
+      next24Hours.forEach((item, index) => {
+         // 1. 시간 데이터
+         const date = new Date(item.dt * 1000);
+         const hours = date.getHours();
+         const timeString = `${hours}시`;
+
+         // 2. 날씨 아이콘 url
+         const iconCode = item.weather[0].icon;
+         const iconUrl = `https://openweathermap.org/img/wn/${iconCode}@2x.png`;
+
+         // 3. 온도데이터
+         const temp = Math.round(item.main.temp);
+
+         // 시간대별 강조하기
+         const isNow = index === 0 ? 'now' : '';
+
+         // 4. 각 시간대별 카드
+         hourlyHtml += `
+         <div class="hourly-item ${isNow}">
+            <span class="item"> ${timeString}</span>
+            <img src="${iconUrl}" alt="${item.weather[0].description}" class="weather-icon"> 
+            <span class="temp">${temp}°</span>
+    
+         </div>`;
+      });
+
+      sliderTrack.innerHTML = hourlyHtml;
+   }
+
+   function drawTempChart(forecastList) {
+      // 1. 차트에 필요한 데이터 추출하고 새로운 배열 만들기
+      const next24Hours = forecastList.slice(0, 8); // ㅇ슬라이더와 동일하게 24시간 데이터 사용하기위해
+
+      // X축 라벨 시간 배열
+      const labels = next24Hours.map(item => {
+         const hours = new Date(item.dt * 1000).getHours();
+         return `${hours}시`;
+      });
+
+      // y축 데이터 온도 배열
+      const temperatures = next24Hours.map(item => item.main.temp);
+
+      // 2. 차트를 그릴 canvas 요소
+      const ctx = document.querySelector('#temp-chart');
+
+      // 3. Chart.js를 사용하여 차트 생성
+
+      new Chart(ctx, {
+         type: 'line', // 차트 종류: 꺾은선 그래프
+         data: {
+            labels: labels, // x축 라벨
+            datasets: [
+               {
+                  label: '온도(°C)', // 데이터의 이름 (툴팁에 표시됨)
+                  data: temperatures, // y축 데이터
+                  borderColor: '#ff6b6b', // 선 색상
+                  backgroundColor: 'rgba(255, 107, 107, 0.2)', // 선 아래 영역 색상
+                  tension: 0.4, // 선의 부드러운 곡선 정도 (0 ~ 1)
+                  fill: true, // 선 아래 영역을 채울지 여부
+                  pointBackgroundColor: '#ff6b6b', // 각 데이터 지점의 색상
+                  pointBorderColor: '#fff', // 지점의 테두리 색상
+                  pointHoverRadius: 6, // 마우스 올렸을 때 지점 크기
+               },
+            ],
+         },
+         options: {
+            responsive: true, // 반응형으로 크기 조절
+            plugins: {
+               legend: {
+                  display: false, // 데이터 라벨(범례) 숨기기
+               },
+            },
+            onHover: (event, chartElement) => {
+               document.querySelectorAll('.hourly-item').forEach(item => {
+                  item.classList.remove('hover');
+               });
+
+               if (chartElement.length > 0) {
+                  const dataIndex = chartElement[0].index;
+                  const targetCard = document.querySelectorAll('.hourly-item')[dataIndex];
+                  if (targetCard) {
+                     targetCard.classList.add('hover');
+                  }
+               }
+            },
+            scales: {
+               x: {
+                  grid: {
+                     display: false, // x축 격자선 숨기기
+                  },
+               },
+               y: {
+                  grid: {
+                     display: false, // y축 격자선 숨기기
+                  },
+                  ticks: {
+                     display: false, // y축 눈금 숫자 숨기기
+                  },
+               },
+            },
+         },
+      });
    }
 });
