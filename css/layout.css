@@ -12,7 +12,7 @@ header {
    background-color: rgba(0, 0, 0, 0.3);
 }
 
-/* ----- S1 (Hero): 감성적 첫인사 ----- */
+/* ----- S1 (Hero) ----- */
 .main-container {
    width: 100%;
    height: 100vh;
@@ -44,7 +44,7 @@ header {
    z-index: 1;
 }
 
-/* ----- S2 (Today): 오늘의 핵심 정보 요약 ----- */
+/* ----- S2 (Today) ----- */
 .today-container {
    width: 100%;
    padding: 4rem 0rem;
@@ -66,11 +66,11 @@ header {
    padding: 0 2rem;
 }
 
-/* ----- S3 (Hourly): 가까운 미래의 상세 흐름 ----- */
+/* ----- S3 (Hourly) ----- */
 .hourly-container {
    width: 100%;
    padding: 4rem 0;
-   background-color: #f4f7fa;
+   background: linear-gradient(to bottom, #ffffff, #f4f7fa);
 }
 
 .hourly-content-wrapper {
@@ -80,35 +80,41 @@ header {
    padding: 0 1rem;
 }
 
-/* ----- S4 (Weekly): 주간 계획을 위한 먼 미래 ----- */
+/* ----- S4 (Weekly) ----- */
 .weekly-container {
    width: 100%;
-   height: 100vh;
-   background-color: aquamarine;
+   padding: 4rem 0;
+   background: linear-gradient(to bottom, #f4f7fa, #ffffff);
 }
 
-/* ----- S5 (Details): 건강과 생활을 위한 부가 정보 ----- */
+.weekly-content-wrapper {
+   width: 100%;
+   max-width: 800px;
+   margin: 0 auto;
+   padding: 0 1rem;
+}
+/* ----- S5 (Details) ----- */
 .lifestyle-container {
    width: 100%;
    height: 100vh;
    background-color: blueviolet;
 }
 
-/* ----- S6 (Map): 시각적 탐색을 위한 인터랙티브 지도 ----- */
+/* ----- S6 (Map) ----- */
 .weather-map-container {
    width: 100%;
    height: 100vh;
    background-color: burlywood;
 }
 
-/* ----- S7 (Outfit): 모든 정보를 종합한 최종 실용 조언 ----- */
+/* ----- S7 (Outfit) ----- */
 .outfit-container {
    width: 100%;
    height: 100vh;
    background-color: cadetblue;
 }
 
-/* ----- S8 (Footer): 신뢰성 확보와 전문적인 마무리 ----- */
+/* ----- S8 (Footer) ----- */
 footer {
    width: 100%;
    height: 6vh;
@@ -137,14 +143,14 @@ footer {
 
    .today-container {
       height: 100vh;
-      padding: 0; /* 태블릿에서는 패딩 제거 */
+      padding: 0;
       width: 100%;
    }
 
    .main-bg {
       padding: 0 2rem;
    }
-   /* ----- S3 (Hourly): 가까운 미래의 상세 흐름 ----- */
+   /* ----- S3 (Hourly) ----- */
    .hourly-container {
       width: 100%;
       padding: 4rem 0;
@@ -157,28 +163,28 @@ footer {
       margin: 0 auto;
       padding: 0 1rem;
    }
-   /* ----- S4 (Weekly): 주간 계획을 위한 먼 미래 ----- */
+   /* ----- S4 (Weekly) ----- */
    .weekly-container {
       width: 100%;
       height: 100vh;
       background-color: aquamarine;
    }
 
-   /* ----- S5 (Details): 건강과 생활을 위한 부가 정보 ----- */
+   /* ----- S5 (Details) ----- */
    .lifestyle-container {
       width: 100%;
       height: 100vh;
       background-color: blueviolet;
    }
 
-   /* ----- S6 (Map): 시각적 탐색을 위한 인터랙티브 지도 ----- */
+   /* ----- S6 (Map) ----- */
    .weather-map-container {
       width: 100%;
       height: 100vh;
       background-color: burlywood;
    }
 
-   /* ----- S7 (Outfit): 모든 정보를 종합한 최종 실용 조언 ----- */
+   /* ----- S7 (Outfit) ----- */
    .outfit-container {
       width: 100%;
       height: 100vh;
@@ -190,5 +196,4 @@ footer {
 /* 3. 데스크탑 (1024px 이상)                           */
 /* =================================================== */
 @media (min-width: 1024px) {
-   /* 데스크탑에서 레이아웃 변경이 필요할 경우 여기에 추가 */
 }

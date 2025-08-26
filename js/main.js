@@ -12,9 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
       pcMenu.classList.toggle('active');
    });
 
-   // ✨ [핵심 기능 3] 실시간 시계 기능 실행
-   // 1초마다 updateClock 함수를 호출하여 화면의 시간을 업데이트합니다.
-   updateClock(); // 페이지 로드 시 즉시 한 번 실행하여 공백 방지
+   updateClock();
    setInterval(updateClock, 1000);
 
    // 메인 날씨 정보 가져오기 실행
@@ -31,7 +29,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
    /**
     * 위치 정보 가져오기 성공 시 실행되는 함수
-    * @param {GeolocationPosition} position - 사용자의 위치 정보 객체
     */
    function onGeoOk(position) {
       const latitude = position.coords.latitude;
@@ -155,6 +152,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
                // 그래프 함수 호출
                drawTempChart(forecastData.list);
+
+               // 주간 예보 목록 호출
+               updateWeeklyForecast(forecastData.list);
             }
          })
          .catch(error => {
@@ -266,15 +266,15 @@ document.addEventListener('DOMContentLoaded', () => {
    function updateClock() {
       // 1. 현재 시간 정보를 가진 Date 객체를 생성합니다.
       const now = new Date();
-      // 2. 시간, 분, 초를 가져옵니다. (숫자가 한 자리일 경우 '0'을 붙여줍니다)
+      // 2. 시간, 분, 초를 가져옴
       const hours = now.getHours().toString().padStart(2, '0');
       const minutes = now.getMinutes().toString().padStart(2, '0');
       const seconds = now.getSeconds().toString().padStart(2, '0');
 
-      // 3. 시간을 표시할 HTML 요소를 선택합니다. (HTML에 .current-time 클래스가 있어야 합니다)
+      // 3. 시간을 표시할 HTML 요소를 선택
       const timeElement = document.querySelector('.current-time');
 
-      // 4. 요소가 존재한다면, "HH:MM:SS" 형태로 텍스트를 업데이트합니다.
+      // 4. 요소가 존재한다면 형태로 텍스트를 업데이트합니다.
       if (timeElement) {
          timeElement.innerText = `${hours}:${minutes}:${seconds}`;
       }
@@ -342,11 +342,11 @@ document.addEventListener('DOMContentLoaded', () => {
             labels: labels, // x축 라벨
             datasets: [
                {
-                  label: '온도(°C)', // 데이터의 이름 (툴팁에 표시됨)
+                  label: '온도(°C)', // 데이터의 이름
                   data: temperatures, // y축 데이터
                   borderColor: '#ff6b6b', // 선 색상
                   backgroundColor: 'rgba(255, 107, 107, 0.2)', // 선 아래 영역 색상
-                  tension: 0.4, // 선의 부드러운 곡선 정도 (0 ~ 1)
+                  tension: 0.4, // 선의 부드러운 곡선
                   fill: true, // 선 아래 영역을 채울지 여부
                   pointBackgroundColor: '#ff6b6b', // 각 데이터 지점의 색상
                   pointBorderColor: '#fff', // 지점의 테두리 색상
@@ -390,6 +390,68 @@ document.addEventListener('DOMContentLoaded', () => {
                },
             },
          },
+      });
+   }
+
+   // 주간 예보 목록
+   function updateWeeklyForecast(forecastList) {
+      const weeklyListElement = document.querySelector('.weekly-forecast-list');
+      weeklyListElement.innerHTML = '';
+
+      // 1. 3시간 데이터를 날짜별로 그룹화하는 로직
+      const dailyData = {};
+      forecastList.forEach(item => {
+         const date = new Date(item.dt * 1000).toLocaleDateString();
+         if (!dailyData[date]) {
+            dailyData[date] = [];
+         }
+         dailyData[date].push(item);
+      });
+
+      // 2. 그룹화된 데이터를 기반으로 HTML 생성
+      for (const date in dailyData) {
+         const dayForecast = dailyData[date];
+
+         // 해당 날짜의 최고/최저 기온 계산
+         const minTemp = Math.min(...dayForecast.map(item => item.main.temp_min));
+         const maxTemp = Math.max(...dayForecast.map(item => item.main.temp_max));
+
+         // 대표 날씨 아이콘
+         const representativeWeather = dayForecast[Math.floor(dayForecast.length / 2)].weather[0];
+         const iconUrl = `https://openweathermap.org/img/wn/${representativeWeather.icon}@2x.png`;
+
+         // 요일 구하기
+         const dayOfWeek = new Date(dayForecast[0].dt * 1000).toLocaleDateString('ko-KR', { weekday: 'long' });
+
+         // 아코디언 상세 정보 HTML
+         const detailHtml = dayForecast
+            .map(
+               item => `
+            <p>${new Date(item.dt * 1000).getHours()}시: ${Math.round(item.main.temp)}°    ${item.weather[0].description}</p>
+         `,
+            )
+            .join('');
+
+         const weeklyItemHtml = `
+            <div class="weekly-item">
+               <div class="item-header">
+                  <span class="day">${dayOfWeek}</span>
+                  <img src="${iconUrl}" alt="${representativeWeather.description}" class="weather-icon">
+                  <span class="temp-range">${Math.round(minTemp)}° / ${Math.round(maxTemp)}°</span>
+               </div>
+               <div class="item-details">
+                 ${detailHtml}
+               </div>
+            </div>
+         `;
+         weeklyListElement.innerHTML += weeklyItemHtml;
+      }
+
+      // 3. 아코디언 클릭 이벤트 추가
+      document.querySelectorAll('.weekly-item .item-header').forEach(header => {
+         header.addEventListener('click', () => {
+            header.parentElement.classList.toggle('active');
+         });
       });
    }
 });
