@@ -1,26 +1,36 @@
+/* =================================================== */
+/* 1. 기본 스타일 (모바일: 350px 이상)                 */
+/* =================================================== */
+
+/* ----- Header ----- */
 header {
    width: 100%;
-   height: 5vh;
+   height: 7vh;
    position: fixed;
-   z-index: 99999;
+   z-index: 9999;
+   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+   background-color: rgba(0, 0, 0, 0.3);
 }
 
+/* ----- S1 (Hero): 감성적 첫인사 ----- */
 .main-container {
    width: 100%;
    height: 100vh;
    position: relative;
    display: flex;
+   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
 }
 
 .main-bg {
    width: 100%;
    height: 100%;
-   background-image: url(../assets/images/main-banner/main-bg.jpeg);
+   background-image: url(../assets/images/section02/clouds.jpg);
    background-position: center center;
    background-repeat: no-repeat;
    background-size: cover;
    position: relative;
    padding: 5rem 2rem;
+   animation: slow-zoom 20s infinite alternate ease-in-out;
 }
 
 .main-bg::before {
@@ -30,61 +40,106 @@ header {
    left: 0;
    width: 100%;
    height: 100%;
-   background-color: rgba(0, 0, 0, 0.3);
+
    z-index: 1;
 }
 
+/* ----- S2 (Today): 오늘의 핵심 정보 요약 ----- */
 .today-container {
    width: 100%;
-   height: 100vh;
-   background-image: url(../assets/images/section02/section02-bg-01.jpeg);
+   padding: 4rem 0rem;
+   background-image: url(../assets/images/section02/default.png);
    background-position: center center;
    background-repeat: no-repeat;
    background-size: cover;
    position: relative;
    background-attachment: fixed;
-}
-.weather-card-container {
-   width: 100%;
-   height: 100%;
-   padding: 0rem 2rem;
+   display: flex;
+   justify-content: center;
+   align-items: center;
+   transition: background-image 0.5s ease-in-out;
 }
 
-@media (min-width: 350px) {
-   body {
-      position: relative;
+.weather-card-container {
+   width: 100%;
+   max-width: 500px;
+   padding: 0 2rem;
+}
+
+/* ----- S3 (Hourly): 가까운 미래의 상세 흐름 ----- */
+.hourly-container {
+   width: 100%;
+   height: 100vh;
+   background-color: antiquewhite;
+}
+
+/* ----- S4 (Weekly): 주간 계획을 위한 먼 미래 ----- */
+.weekly-container {
+   width: 100%;
+   height: 100vh;
+   background-color: aquamarine;
+}
+
+/* ----- S5 (Details): 건강과 생활을 위한 부가 정보 ----- */
+.lifestyle-container {
+   width: 100%;
+   height: 100vh;
+   background-color: blueviolet;
+}
+
+/* ----- S6 (Map): 시각적 탐색을 위한 인터랙티브 지도 ----- */
+.weather-map-container {
+   width: 100%;
+   height: 100vh;
+   background-color: burlywood;
+}
+
+/* ----- S7 (Outfit): 모든 정보를 종합한 최종 실용 조언 ----- */
+.outfit-container {
+   width: 100%;
+   height: 100vh;
+   background-color: cadetblue;
+}
+
+/* ----- S8 (Footer): 신뢰성 확보와 전문적인 마무리 ----- */
+footer {
+   width: 100%;
+   height: 6vh;
+   background-color: brown;
+   display: none;
+}
+
+/* ----- Animations ----- */
+@keyframes slow-zoom {
+   from {
+      transform: scale(1);
    }
-   header {
-      width: 100%;
-      height: 7vh;
-      position: fixed;
-      z-index: 99999;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+   to {
+      transform: scale(1.05);
    }
+}
+
+/* =================================================== */
+/* 2. 태블릿 (768px 이상)                              */
+/* =================================================== */
+@media (min-width: 768px) {
    .main-container {
-      width: 100%;
       height: 45vh;
-      position: relative;
-      display: flex;
    }
-   .main-bg {
-      width: 100%;
-      height: 100%;
-      padding: 0rem 1rem;
-   }
+
    .today-container {
-      width: 100%;
-      height: 46.5vh;
-      background-image: url(../assets/images/section02/section02-bg-01.jpeg);
-      background-position: center center;
-      background-repeat: no-repeat;
-      background-size: cover;
-      position: relative;
-      background-attachment: fixed;
+      height: 55vh;
+      padding: 0; /* 태블릿에서는 패딩 제거 */
    }
-   .weather-card-container {
-      width: 100%;
-      height: 100%;
-      padding: 0rem 2rem;
+
+   .main-bg {
+      padding: 0 2rem;
    }
+}
+
+/* =================================================== */
+/* 3. 데스크탑 (1024px 이상)                           */
+/* =================================================== */
+@media (min-width: 1024px) {
+   /* 데스크탑에서 레이아웃 변경이 필요할 경우 여기에 추가 */
 }

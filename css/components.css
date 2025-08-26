@@ -1,5 +1,9 @@
-.logo {
-   max-width: 120px;
+/* =================================================== */
+/* 1. 기본 스타일 (모바일: 350px 이상)                 */
+/* =================================================== */
+
+/* .logo {
+   max-width: 50px;
    height: auto;
 }
 
@@ -7,50 +11,89 @@
    width: 100%;
    height: 100%;
    object-fit: cover;
-}
-.pc-menu {
+} */
+
+/* 데스크탑/모바일 메뉴를 포함하는 전체 컨테이너 */
+.nav-menu {
    width: 100%;
    height: 100%;
    display: flex;
    justify-content: space-between;
-}
-
-.pc-menu ul {
-   display: flex;
    align-items: center;
-   transition: opacity 0.5s ease-in-out;
+   padding: 0 1rem;
 }
 
+/* 모바일에서 숨겨질 메뉴 목록 */
+.nav-menu ul {
+   opacity: 0;
+   position: absolute;
+   top: 7vh;
+   right: 0;
+   flex-direction: column;
+   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+   width: 100%;
+   padding: 1rem 0;
+   gap: 0.5rem;
+   font-size: 16px;
+   text-align: center;
+   transition:
+      opacity 0.3s ease-in-out,
+      transform 0.3s ease-in-out;
+   transform: translateY(-10px);
+   pointer-events: none;
+}
+
+.nav-menu ul.active {
+   opacity: 1;
+   transform: translateY(0);
+   pointer-events: auto;
+}
+
+/* 모바일 햄버거 메뉴 아이콘 */
 .m-menu {
    display: flex;
    cursor: pointer;
    position: relative;
+   padding: 0.5rem;
 }
 
-.m-menu ul li img {
-   width: 100%;
-   height: auto;
+.m-menu img {
+   width: 24px;
+   height: 24px;
    object-fit: cover;
 }
 
-.m-footer-menu li a {
-   width: 100%;
-   height: auto;
-   object-fit: cover;
-}
+/* 메인 배너 텍스트 */
 .header-title-text {
    display: flex;
    position: absolute;
-   justify-content: center;
-   align-items: center;
    top: 50%;
-   z-index: 2;
    left: 50%;
    transform: translate(-50%, -50%);
+   z-index: 2;
    width: 100%;
    flex-direction: column;
    line-height: 1.2;
+   text-align: center;
+   /* border: 1px solid red; */
 }
+
+.header-title-text h2 {
+   font-size: 1.2rem;
+   font-weight: 600;
+   color: #fff;
+   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.header-title-text p {
+   font-size: 0.875rem;
+   color: #fff;
+   line-height: 1.5;
+   margin-top: 0.5rem;
+   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+/* 유리 질감 카드 */
 .weather-card-glass {
    background: rgba(255, 255, 255, 0.2);
    backdrop-filter: blur(10px);
@@ -59,84 +102,216 @@
    border-radius: 1rem;
    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
    padding: 2rem;
+   display: flex;
+   flex-direction: column;
+   gap: 1.5rem; /* 각 섹션 사이의 간격 */
+   color: #fff;
+   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
-@media (min-width: 350px) {
-   .pc-menu ul {
-      opacity: 0;
-      position: absolute;
-      top: 7vh;
-      right: 0;
-      flex-direction: column;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-      width: 100%;
-      gap: 0.5rem;
-   }
 
-   .pc-menu ul {
-      font-size: 14px;
-   }
+.card-header {
+   text-align: center;
+}
+.current-location {
+   font-size: 1.25rem;
+   font-weight: 500;
+}
+.last-updated {
+   font-size: 0.75rem;
+   opacity: 0.8;
+   margin-top: 0.25rem;
+}
 
-   .pc-menu ul.active {
-      opacity: 1;
-   }
+.main-info {
+   display: flex;
+   justify-content: space-between;
+   align-items: center;
+}
+.current-temp {
+   font-size: 4rem;
+   font-weight: 700;
+   line-height: 1;
+}
+
+.current-time {
+   font-size: 1rem;
+}
+
+.minmax-temp {
+   font-size: 1rem;
+}
+
+.main-weather-wrapper {
+   text-align: center;
+   margin-left: 2rem;
+}
+
+.weather-description-info {
+   text-align: center;
+   margin: 0;
+}
+
+#weather-icon {
+   width: 80px;
+   height: 80px;
+}
+#weather-desc {
+   font-size: 1.125rem;
+   font-weight: 500;
+   margin-top: 0.5rem;
+}
+
+.sub-info {
+   display: flex;
+   justify-content: space-around;
+   background: rgba(0, 0, 0, 0.1); /* 부가 정보 영역 살짝 구분 */
+   padding: 1.5rem;
+   border-radius: 0.75rem;
+   flex-wrap: wrap;
+   gap: 1.5rem;
+}
+.info-item {
+   text-align: center;
+}
+.info-item span {
+   font-size: 0.875rem;
+   opacity: 0.9;
+}
+.info-item strong {
+   font-size: 1.125rem;
+   display: block;
+   margin-top: 0.25rem;
+}
+
+.air-quality-advice,
+.weather-description-detail {
+   line-height: 1.5;
+   font-size: 0.695rem;
+}
+
+/* ----- 일출/일몰 타임라인 스타일 ----- */
+.timeline-info {
+   display: flex;
+   justify-content: space-between;
+   align-items: center;
+   gap: 1rem;
+   padding-top: 1rem;
+   border-top: 1px solid rgba(255, 255, 255, 0.2);
+   margin-top: 1rem;
+   position: relative;
+}
+
+.sunrise,
+.sunset {
+   text-align: center;
+}
+
+.sunrise img,
+.sunset img {
+   width: 40px;
+   height: 40px;
+}
+
+.sunrise-time,
+.sunset-time {
+   display: block;
+   font-size: 1.125rem;
+   font-weight: 600;
+}
+
+.sun-progress-bar-wrapper {
+   flex-grow: 1;
+   height: 8px;
+   background-color: rgba(0, 0, 0, 0.2);
+   border-radius: 4px;
+   position: relative;
+   overflow: hidden;
+}
+
+.sun-progress-bar {
+   position: absolute;
+   top: 0;
+   left: 0;
+   height: auto;
+   width: 0%;
+   background: linear-gradient(90deg, #ffd700, #ffa500);
+   border-radius: 4px;
+   transition: width 1s ease-in-out;
+   /* border: 1px solid red; */
+}
+
+.sun-icon-progress {
+   position: absolute;
+   right: -10px;
+   top: -5px;
+   font-size: 18px;
+}
+
+/* 모바일 하단 고정 메뉴 */
+.m-footer-menu {
+   position: fixed;
+   left: 0;
+   right: 0;
+   bottom: 0;
+   display: flex;
+   justify-content: space-around;
+   background-color: #fff;
+   border-top: 1px solid #eee;
+   box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.05);
+   padding: 0.5rem 0;
+   z-index: 999;
+   padding-bottom: calc(0.5rem + env(safe-area-inset-bottom));
+   border-top-left-radius: 20px;
+   border-top-right-radius: 20px;
+}
+
+.m-footer-menu li a {
+   text-decoration: none;
+   color: #333;
+   display: flex;
+   flex-direction: column;
+   align-items: center;
+   padding: 0 0.5rem;
+   width: 100%;
+}
+/* .m-footer-menu li a img 스타일 필요 시 추가 */
+
+/* =================================================== */
+/* 2. 태블릿 (768px 이상)                              */
+/* =================================================== */
+@media (min-width: 768px) {
    .header-title-text h2 {
-      font-size: 18px;
-      font-weight: 400;
-      color: #fff;
+      font-size: 2rem; /* 32px */
    }
 
    .header-title-text p {
-      font-size: 12px;
-      color: #fff;
-      text-align: center;
-      line-height: 1.2;
+      font-size: 1rem; /* 16px */
    }
-   .header-title-text {
-      display: flex;
-      position: absolute;
-      justify-content: center;
-      align-items: center;
-      top: 50%;
-      z-index: 2;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: 100%;
-      flex-direction: column;
-      line-height: 1.2;
-   }
-   .m-footer-menu {
-      position: fixed;
-      left: 0rem;
-      right: 0rem;
-      bottom: 0rem;
-      display: flex;
-      justify-content: space-around;
-      background-color: #fff;
-      border: 1px solid #ddd;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-      padding: 0.5rem 0;
-      z-index: 9999;
-      padding-bottom: calc(0.5rem + env(safe-area-inset-bottom));
-      border-top-left-radius: 20px;
-      border-top-right-radius: 20px;
+}
+
+/* =================================================== */
+/* 3. 데스크탑 (1024px 이상)                           */
+/* =================================================== */
+@media (min-width: 1024px) {
+   .m-menu {
+      display: none;
    }
 
-   .m-footer-menu li a {
-      text-decoration: none;
-      color: #333;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 0 0.5rem;
-      width: 100%;
+   .m-footer-menu {
+      display: none;
    }
-   .weather-card-glass {
-      background: rgba(255, 255, 255, 0.2);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      border: 1px solid rgba(255, 255, 255, 0.3);
-      border-radius: 1rem;
-      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
-      padding: 2rem;
+
+   .pc-menu ul {
+      opacity: 1;
+      position: static;
+      flex-direction: row;
+      background-color: transparent;
+      box-shadow: none;
+      width: auto;
+      padding: 0;
+      gap: 2.5rem;
+      font-size: 1rem;
+      transform: none;
+      pointer-events: auto;
    }
 }
