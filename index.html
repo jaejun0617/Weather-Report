@@ -16,6 +16,7 @@
             <!-- <div class="logo">
                <img src="./assets/icons/logo.jpg" alt="" />
             </div> -->
+
             <ul>
                <li><a href="#">Menu</a></li>
                <li><a href="#">Menu</a></li>
@@ -23,6 +24,7 @@
                <li><a href="#">Menu</a></li>
                <li><a href="#">Menu</a></li>
             </ul>
+            <p class="current-time">--:--:--</p>
             <div class="m-menu">
                <img src="./assets/icons/menubar_white.svg" alt="모바일 메뉴" />
             </div>
@@ -54,7 +56,7 @@
                   <!-- 지역 및 시간 -->
                   <div class="card-header">
                      <h2 class="current-location">---</h2>
-                     <p class="current-time">--:--:--</p>
+                     <!-- <p class="current-time">--:--:--</p> -->
                      <p class="last-updated">최종 업데이트</p>
                   </div>
 
@@ -146,21 +148,8 @@
          <section class="weekly-container">
             <div class="weekly-content-wrapper">
                <h3 class="section-title">📆 주간 날씨</h3>
-
-               <!-- JavaScript가 이 안에 날짜별 예보 아이템을 동적으로 추가할 예정 -->
                <div class="weekly-forecast-list">
-                  <!-- 예시 아이템 구조 (나중에 JS로 생성)
-                  <div class="weekly-item">
-                     <div class="item-header">
-                        <span class="day">오늘</span>
-                        <img src="..." alt="날씨 아이콘" class="weather-icon">
-                        <span class="temp-range">22° / 31°</span>
-                     </div>
-                     <div class="item-details">
-                        <p>상세 정보가 여기에 표시됩니다...</p>
-                     </div>
-                  </div>
-                  -->
+                  <!-- 예시 아이템 구조 (나중에 JS로 생성)-->
                </div>
             </div>
          </section>
@@ -169,22 +158,71 @@
          <!-- S5 (Details): 건강과 생활을 위한 부가 정보                            -->
          <!-- =================================================================== -->
          <section class="lifestyle-container">
-            <!-- 섹션 5: 생활 지수 및 상세 정보 (Lifestyle & Details)
-            "더 스마트한 하루를 위한 정보들"
-            단순한 날씨를 넘어, 사용자의 건강과 실생활에 직접적인 도움을 주는 부가 정보들을 모아서 보여줍니다.
-            핵심 기능: 격자(Grid) 형태의 카드 레이아웃. 각 정보가 독립된 카드로 표시됩니다.
-            표시할 정보 (각각의 카드로):
-            😷 대기 질: 미세먼지(PM10), 초미세먼지(PM2.5) 농도와 상태 (좋음, 나쁨 등)
-            ☀️ 자외선 지수: 지수 값과 상태 (높음, 매우 높음 등)
-            🌡️ 체감 온도: 실제 온도와 비교하여 보여주기
-            💧 습도 및 💨 풍속: 현재 습도와 바람의 세기
-            🌅 일출/일몰: 오늘 해 뜨는 시간과 해 지는 시간
-            ✨ 전문가 팁 (차별화 포인트):
-            각 카드의 상태(예: 미세먼지 '나쁨')에 따라 색상을 동적으로 변경해 주세요 (좋음: 파랑, 보통: 초록, 나쁨: 주황, 매우 나쁨: 빨강).
-            단순히 숫자만 보여주기보다, "세차하기 좋은 날이에요!" 또는 "외출 시 마스크를 꼭 챙기세요." 
-            와 같은 간단한 조언 문구를 함께 보여주면 사용자의 만족도가 크게 올라갑니다.
-            이 세 가지 섹션을 순서대로 구성하면, 사용자는 스크롤을 내리는 것만으로도 
-            자연스럽게 원하는 모든 정보를 체계적으로 얻게 되는, 매우 훌륭한 사용자 경험을 제공하는 웹사이트가 될 것입니다. -->
+            <div class="lifestyle-content-wrapper">
+               <h3 class="section-title">오늘의 생활 지수</h3>
+
+               <!-- JavaScript가 이 안에 카드들을 채울 예정 -->
+               <div class="lifestyle-grid">
+                  <!-- 자외선 지수 카드 -->
+                  <div class="lifestyle-card" id="uv-card">
+                     <div class="card-header">
+                        <img src="./assets/icons/uv-index.png" alt="자외선 아이콘" />
+                        <h4>자외선 지수</h4>
+                     </div>
+                     <div class="card-body">
+                        <p class="card-value uv-value">--</p>
+                        <p class="card-advice uv-advice">정보를 불러오는 중...</p>
+                     </div>
+                  </div>
+
+                  <!-- 체감 온도 카드 -->
+                  <div class="lifestyle-card">
+                     <div class="card-header">
+                        <img src="./assets/icons/temperature.png" alt="온도계 아이콘" />
+                        <h4>체감 온도</h4>
+                     </div>
+                     <div class="card-body">
+                        <p class="card-value feels-like-value">--°</p>
+                        <p class="card-advice feels-like-advice">실제 느껴지는 온도입니다.</p>
+                     </div>
+                  </div>
+
+                  <!-- 풍속 카드 -->
+                  <div class="lifestyle-card flip-card">
+                     <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                           <div class="card-header">
+                              <img src="./assets/icons/wind.png" alt="바람 아이콘" />
+                              <h4>풍속</h4>
+                           </div>
+                           <div class="card-body">
+                              <p class="card-value wind-speed-value">-- m/s</p>
+                           </div>
+                        </div>
+
+                        <div class="flip-card-back">
+                           <h4>풍력 계급</h4>
+                           <p class="wind-advice">--</p>
+                           <span>(보퍼트 풍력 계급 기준)</span>
+                        </div>
+                     </div>
+                  </div>
+                  <!-- 습도 카드 -->
+                  <div class="lifestyle-card">
+                     <div class="card-header">
+                        <img src="./assets/icons/humidity.png" alt="습도 아이콘" />
+                        <h4>습도</h4>
+                     </div>
+                     <div class="card-body">
+                        <div class="gauge-wrapper">
+                           <div class="gauge-bar humidity-gauge"></div>
+                        </div>
+                        <p class="card-value humidity-value">--%</p>
+                        <p class="card-advice humidity-advice">공기의 건조/습한 정도입니다.</p>
+                     </div>
+                  </div>
+               </div>
+            </div>
          </section>
 
          <!-- =================================================================== -->

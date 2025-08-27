@@ -38,8 +38,9 @@ document.addEventListener('DOMContentLoaded', () => {
       const weatherUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=${API_KEY}&units=metric&lang=kr`;
       const airPollutionUrl = `https://api.openweathermap.org/data/2.5/air_pollution?lat=${latitude}&lon=${longitude}&appid=${API_KEY}`;
       const forecastUrl = `https://api.openweathermap.org/data/2.5/forecast?lat=${latitude}&lon=${longitude}&appid=${API_KEY}&units=metric&lang=kr`;
+      const uvUrl = `https://api.openweathermap.org/data/2.5/uvi?lat=${latitude}&lon=${longitude}&appid=${API_KEY}`;
 
-      Promise.all([fetch(weatherUrl), fetch(airPollutionUrl), fetch(forecastUrl)])
+      Promise.all([fetch(weatherUrl), fetch(airPollutionUrl), fetch(forecastUrl), fetch(uvUrl)])
          .then(responses =>
             Promise.all(
                responses.map(response => {
@@ -50,7 +51,7 @@ document.addEventListener('DOMContentLoaded', () => {
                }),
             ),
          )
-         .then(([weatherData, airData, forecastData]) => {
+         .then(([weatherData, airData, forecastData, uvDate]) => {
             // ----- 3-1. 날씨 데이터 처리 -----
             if (weatherData && weatherData.main && weatherData.weather && weatherData.wind) {
                const currentTemp = weatherData.main.temp;
@@ -155,6 +156,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
                // 주간 예보 목록 호출
                updateWeeklyForecast(forecastData.list);
+            }
+            if (weatherData && airData && uvDate) {
+               updateLifestyleInfo(weatherData, airData, uvDate);
             }
          })
          .catch(error => {
@@ -454,4 +458,50 @@ document.addEventListener('DOMContentLoaded', () => {
          });
       });
    }
+
+   // 색션 5 생활지수
+   function updateLifestyleInfo(weatherData, airData, uvDate) {
+      // 1. 자외선 지수 카드
+      const uvValue = uvDate.value;
+      const uvCard = document.getElementById('uv-card');
+      const uvValueElement = uvCard.querySelector('.uv-value');
+      const uvAdviceElement = uvCard.querySelector('.uv-advice');
+      const humidity = weatherData.main.humidity;
+      const windSpeed = weatherData.wind.speed;
+
+      uvValueElement.innerText = uvValue;
+      uvCard.classList.remove('uv-moderate', 'uv-high', 'uv-very-high'); // 기존 클래스 초기화
+
+      const windAdviceElement = document.querySelector('.wind-advice');
+      if (windSpeed > 10.8) {
+         windAdviceElement.innerText = '강풍! 외출 시 주의하세요.';
+      } else if (windSpeed > 5.5) {
+         windAdviceElement.innerText = '산들바람이 불어요.';
+      } else {
+         windAdviceElement.innerText = '바람이 거의 없는 고요한 날입니다.';
+      }
+
+      if (uvValue >= 8) {
+         uvAdviceElement.innerText = '매우 높음! 장시간 노출은 피하고, 외출 시 꼭 대비하세요.';
+         uvCard.classList.add('uv-very-high');
+      } else if (uvValue >= 6) {
+         uvAdviceElement.innerText = '높음! 선크림을 꼭 바르고, 모자를 착용하는 것이 좋습니다.';
+         uvCard.classList.add('uv-high');
+      } else if (uvValue >= 3) {
+         uvAdviceElement.innerText = '보통. 장시간 야외 활동 시 주의가 필요해요.';
+         uvCard.classList.add('uv-moderate');
+      } else {
+         uvAdviceElement.innerText = '낮음. 자외선 걱정 없이 야외 활동을 즐기세요!';
+      }
+
+      // --- 2. 기타 생활 지수 카드 업데이트 ---
+      document.querySelector('.feels-like-value').innerText = `${Math.round(weatherData.main.feels_like)}°`;
+      document.querySelector('.wind-speed-value').innerText = `${weatherData.wind.speed} m/s`;
+      document.querySelector('.humidity-value').innerText = `${weatherData.main.humidity}%`;
+      document.querySelector('.humidity-value').innerText = `${humidity}%`;
+      document.querySelector('.humidity-gauge').style.width = `${humidity}%`;
+      document.querySelector('.wind-speed-value').innerText = `${windSpeed} m/s`;
+   }
+
+   // end
 });

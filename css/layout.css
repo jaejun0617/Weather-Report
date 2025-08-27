@@ -96,8 +96,15 @@ header {
 /* ----- S5 (Details) ----- */
 .lifestyle-container {
    width: 100%;
-   height: 100vh;
-   background-color: blueviolet;
+   padding: 4rem 0;
+   background-color: #ffffff;
+}
+
+.lifestyle-content-wrapper {
+   width: 100%;
+   max-width: 1200px;
+   margin: 0 auto;
+   padding: 0 1rem;
 }
 
 /* ----- S6 (Map) ----- */
