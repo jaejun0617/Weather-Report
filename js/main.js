@@ -1,16 +1,39 @@
+'use strict';
+
+// 1. DOMContentLoaded 이벤트 리스너: HTML 문서가 준비되면 실행
 document.addEventListener('DOMContentLoaded', () => {
    console.log('DOM 준비');
+   if (typeof kakao !== 'undefined' && kakao.maps) {
+      kakao.maps.load(() => {
+         console.log('카카오맵 API 및 라이브러리 준비 완료');
+         // 앱의 모든 기능을 초기화하고 실행하는 메인 함수 호출
+         initializeApp();
+      });
+   } else {
+      console.error(
+         '카카오맵 API 스크립트가 로드되지 않았습니다. index.html 파일을 확인하세요.',
+      );
+      // API 스크립트가 없어도 지도 외의 기능은 동작하도록 처리
+      initializeApp();
+   }
+});
 
+/**
+ * 앱의 모든 기능을 초기화하고 실행하는 메인 함수
+ */
+function initializeApp() {
    // ===================================================
-   // 1. 이벤트 리스너 및 초기 실행 함수
+   // 이벤트 리스너 및 초기 실행 함수
    // ===================================================
 
    // 모바일 메뉴 토글 이벤트 리스너 설정
    const mMenu = document.querySelector('.m-menu');
    const pcMenu = document.querySelector('.nav-menu ul');
-   mMenu.addEventListener('click', () => {
-      pcMenu.classList.toggle('active');
-   });
+   if (mMenu && pcMenu) {
+      mMenu.addEventListener('click', () => {
+         pcMenu.classList.toggle('active');
+      });
+   }
 
    updateClock();
    setInterval(updateClock, 1000);
@@ -19,12 +42,12 @@ document.addEventListener('DOMContentLoaded', () => {
    navigator.geolocation.getCurrentPosition(onGeoOk, onGeoError);
 
    // ===================================================
-   // 2. API 키 설정
+   // API 키 설정
    // ===================================================
    const API_KEY = '6d37c03a327b0ee12edb5baa05994a28';
 
    // ===================================================
-   // 3. 메인 함수 정의
+   // 메인 함수 정의
    // ===================================================
 
    /**
@@ -35,135 +58,62 @@ document.addEventListener('DOMContentLoaded', () => {
       const longitude = position.coords.longitude;
       console.log(`현재 위치: 위도 ${latitude}, 경도 ${longitude}`);
 
+      // kakao 객체가 있을 경우에만 지도 초기화
+      if (typeof kakao !== 'undefined' && kakao.maps) {
+         initializeWeatherMap(latitude, longitude);
+      }
+
       const weatherUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=${API_KEY}&units=metric&lang=kr`;
       const airPollutionUrl = `https://api.openweathermap.org/data/2.5/air_pollution?lat=${latitude}&lon=${longitude}&appid=${API_KEY}`;
       const forecastUrl = `https://api.openweathermap.org/data/2.5/forecast?lat=${latitude}&lon=${longitude}&appid=${API_KEY}&units=metric&lang=kr`;
       const uvUrl = `https://api.openweathermap.org/data/2.5/uvi?lat=${latitude}&lon=${longitude}&appid=${API_KEY}`;
 
-      Promise.all([fetch(weatherUrl), fetch(airPollutionUrl), fetch(forecastUrl), fetch(uvUrl)])
-         .then(responses =>
-            Promise.all(
-               responses.map(response => {
-                  if (!response.ok) {
-                     throw new Error(`HTTP error! status: ${response.status}`);
-                  }
-                  return response.json();
-               }),
-            ),
-         )
+      Promise.all([
+         fetch(weatherUrl),
+         fetch(airPollutionUrl),
+         fetch(forecastUrl),
+         fetch(uvUrl),
+      ])
+         .then((responses) => Promise.all(responses.map((res) => res.json())))
          .then(([weatherData, airData, forecastData, uvDate]) => {
-            // ----- 3-1. 날씨 데이터 처리 -----
-            if (weatherData && weatherData.main && weatherData.weather && weatherData.wind) {
-               const currentTemp = weatherData.main.temp;
-               const feelsLikeTemp = weatherData.main.feels_like;
-               const minTemp = weatherData.main.temp_min;
-               const maxTemp = weatherData.main.temp_max;
-               const humidity = weatherData.main.humidity;
-               const precipitation = weatherData.rain ? weatherData.rain['1h'] : 0;
-               const windSpeed = weatherData.wind.speed;
-               const weatherStatus = weatherData.weather[0].main;
-               const locationName = weatherData.name;
-               const sunriseTimestamp = weatherData.sys.sunrise;
-               const sunsetTimestamp = weatherData.sys.sunset;
-               const customMessage = getCustomWeatherMessage(weatherStatus, currentTemp);
-
-               console.log(`온도: ${currentTemp}°C, 날씨: ${weatherStatus}, 지역: ${locationName}`);
-
-               updateBackground(weatherStatus);
-               updateSunriseSunset(sunriseTimestamp, sunsetTimestamp);
-
-               document.querySelector('.current-temp').innerText = `${Math.round(currentTemp)}°`;
-               document.querySelector('.feels-like').innerText = `체감 ${Math.round(feelsLikeTemp)}°`;
-               document.querySelector('.minmax-temp').innerText =
-                  `최저 ${Math.round(minTemp)}° \n 최고 ${Math.round(maxTemp)}°`;
-               document.querySelector('.wind-speed').innerText = `${windSpeed} m/s`;
-               document.querySelector('.humidity').innerText = `${humidity}%`;
-               document.querySelector('.precipitation').innerText = `${precipitation} mm`;
-               document.querySelector('#weather-desc').innerText = weatherStatus;
-               document.querySelector('.current-location').innerText = locationName;
-               document.querySelector('.weather-description-detail').innerText = customMessage;
-
-               const iconElement = document.querySelector('#weather-icon');
-               if (weatherStatus === 'Clear') {
-                  iconElement.src = './assets/icons/uv-index.png';
-               } else if (weatherStatus === 'Clouds') {
-                  iconElement.src = './assets/icons/weather-condition.png';
-               } else if (weatherStatus === 'Rain' || weatherStatus === 'Drizzle') {
-                  iconElement.src = './assets/icons/hourly-forecast.png';
-               } else if (weatherStatus === 'Thunderstorm') {
-                  iconElement.src = './assets/icons/weather-alert.png';
-               } else if (weatherStatus === 'Snow') {
-                  iconElement.src = './assets/icons/snow.png';
-               } else if (weatherStatus === 'Mist' || weatherStatus === 'Haze' || weatherStatus === 'Fog') {
-                  iconElement.src = './assets/icons/air-quality.png';
-               } else {
-                  iconElement.src = './assets/icons/weather-condition.png';
-               }
-            } else {
-               console.error('날씨 API 응답 데이터 형식이 올바르지 않습니다.', weatherData);
+            // ----- 날씨 데이터 처리 -----
+            if (weatherData && weatherData.main) {
+               updateCurrentWeatherUI(weatherData);
             }
 
-            // ----- 3-2. 대기 질 데이터 처리 -----
-            if (airData && airData.list && airData.list.length > 0) {
-               const aqi = airData.list[0].main.aqi;
-               let aqiText = '';
-               let aqiAdvice = '';
-
-               switch (aqi) {
-                  case 1:
-                     aqiText = '최고! 아주 좋아요 👍';
-                     aqiAdvice = '창문을 활짝 열고 \n 맑은 공기를 만끽하세요!';
-                     break;
-                  case 2:
-                     aqiText = '괜찮아요, 보통이에요 🙂';
-                     aqiAdvice = '큰 걱정 없이 편안하게 \n 야외 활동을 즐길 수 있어요.';
-                     break;
-                  case 3:
-                     aqiText = '조금 나쁨 😷';
-                     aqiAdvice = '민감하신 분들은 장시간 외출 시 마스크 착용을 고려해 보세요.';
-                     break;
-                  case 4:
-                     aqiText = '나쁨! 주의하세요 😠';
-                     aqiAdvice = '가급적 외출을 줄이고, \n 외출 시에는 KF80 이상 마스크를 꼭 착용하세요.';
-                     break;
-                  case 5:
-                     aqiText = '매우 나쁨! 위험해요 👿';
-                     aqiAdvice = '오늘은 실내에 머무르는 것이 가장 좋습니다. \n 창문은 꼭 닫아두세요!';
-                     break;
-                  default:
-                     aqiText = '정보 없음';
-                     aqiAdvice = '현재 대기 질 정보를 가져올 수 없어요.';
-               }
-
-               console.log(`대기 질: ${aqiText} (AQI: ${aqi})`);
-
-               const airQualityTextElement = document.querySelector('.air-quality-text');
-               const airQualityAdviceElement = document.querySelector('.air-quality-advice');
-
-               if (airQualityTextElement && airQualityAdviceElement) {
-                  airQualityTextElement.innerText = aqiText;
-                  airQualityAdviceElement.innerText = aqiAdvice;
-               }
-            } else {
-               console.error('대기 질 API 응답 데이터 형식이 올바르지 않습니다.', airData);
+            // ----- 대기 질 데이터 처리 -----
+            if (airData && airData.list) {
+               updateAirQualityUI(airData);
             }
+
+            // ----- 예보 데이터 처리 -----
             if (forecastData && forecastData.list) {
-               // 슬라이더 함수 호출
                updateHourlyForecast(forecastData.list);
-
-               // 그래프 함수 호출
-               drawTempChart(forecastData.list);
-
-               // 주간 예보 목록 호출
+               // Chart.js가 로드되었는지 확인 후 그래프 그리기
+               if (typeof Chart !== 'undefined') {
+                  drawTempChart(forecastData.list);
+               } else {
+                  console.error('Chart.js 라이브러리가 로드되지 않았습니다.');
+               }
                updateWeeklyForecast(forecastData.list);
             }
-            if (weatherData && airData && uvDate) {
-               updateLifestyleInfo(weatherData, airData, uvDate);
+
+            // ----- 생활 지수 데이터 처리 -----
+            if (weatherData && uvDate) {
+               updateLifestyleInfo(weatherData, uvDate);
+            }
+            if (weatherData && forecastData && uvDate) {
+               updateLifestyleInfo(weatherData, uvDate);
+
+               updateOutfitSuggestion(weatherData, forecastData, uvDate);
             }
          })
-         .catch(error => {
+
+         .catch((error) => {
             console.error('데이터를 가져오는 중 오류 발생:', error);
-            alert('데이터를 불러오는 데 실패했습니다. 잠시 후 다시 시도해주세요.');
+            alert(
+               '데이터를 불러오는 데 실패했습니다. 잠시 후 다시 시도해주세요.',
+            );
          });
    }
 
@@ -174,7 +124,9 @@ document.addEventListener('DOMContentLoaded', () => {
       console.error('위치 정보 에러:', err);
       switch (err.code) {
          case err.PERMISSION_DENIED:
-            alert('위치 권한이 거부되었습니다. 브라우저 설정에서 허용해주세요.');
+            alert(
+               '위치 권한이 거부되었습니다. 브라우저 설정에서 허용해주세요.',
+            );
             break;
          case err.POSITION_UNAVAILABLE:
             alert('위치 정보를 사용할 수 없습니다.');
@@ -187,13 +139,287 @@ document.addEventListener('DOMContentLoaded', () => {
       }
    }
 
-   /**
-    * '날씨 번역기' 함수
-    */
+   // ===================================================
+   // 지도 기능 관련 함수
+   // ===================================================
+   function initializeWeatherMap(lat, lon) {
+      const mapContainer = document.getElementById('map');
+      if (!mapContainer) return;
+
+      const mapOption = {
+         center: new kakao.maps.LatLng(lat, lon),
+         level: 9,
+      };
+      const map = new kakao.maps.Map(mapContainer, mapOption);
+      map.addControl(
+         new kakao.maps.MapTypeControl(),
+         kakao.maps.ControlPosition.TOPRIGHT,
+      );
+      map.addControl(
+         new kakao.maps.ZoomControl(),
+         kakao.maps.ControlPosition.RIGHT,
+      );
+
+      let currentOverlay = null;
+
+      function setImageOverlay(imgSrc) {
+         if (currentOverlay) currentOverlay.setMap(null);
+         if (!imgSrc) return;
+         const overlayBounds = new kakao.maps.LatLngBounds(
+            new kakao.maps.LatLng(32.5, 123.5),
+            new kakao.maps.LatLng(39.5, 132.0),
+         );
+         currentOverlay = new kakao.maps.ImageOverlay(imgSrc, overlayBounds, {
+            opacity: 0.7,
+            zIndex: 3,
+         });
+         currentOverlay.setMap(map);
+      }
+
+      const btnRadar = document.getElementById('btn-radar');
+      const btnSatellite = document.getElementById('btn-satellite');
+      const btnNone = document.getElementById('btn-none');
+      const mapBtns = document.querySelectorAll('.map-btn');
+
+      function setActiveButton(activeBtn) {
+         mapBtns.forEach((btn) => btn.classList.remove('active'));
+         if (activeBtn) activeBtn.classList.add('active');
+      }
+
+      if (btnRadar)
+         btnRadar.addEventListener('click', () => {
+            const radarImgSrc =
+               'https://www.weather.go.kr/DFS/MAP/NWP/H03/H03_H03_010_2000_F.png?t=' +
+               new Date().getTime();
+            setImageOverlay(radarImgSrc);
+            setActiveButton(btnRadar);
+         });
+
+      if (btnSatellite)
+         btnSatellite.addEventListener('click', () => {
+            const satelliteImgSrc =
+               'https://www.weather.go.kr/repositary/image/sat/amc/KOREA/amc_KOREA_rgb_10min.png?t=' +
+               new Date().getTime();
+            setImageOverlay(satelliteImgSrc);
+            setActiveButton(btnSatellite);
+         });
+
+      if (btnNone)
+         btnNone.addEventListener('click', () => {
+            setImageOverlay(null);
+            setActiveButton(btnNone);
+         });
+
+      if (btnRadar) btnRadar.click();
+   }
+
+   // ===================================================
+   // ✅ [신규 추가] 옷차림 추천 기능 함수
+   // ===================================================
+
+   function updateOutfitSuggestion(weatherData, forecastData, uvData) {
+      const maxTemp = weatherData.main.temp_max;
+      const minTemp = weatherData.main.temp_min;
+      const weatherStatus = weatherData.weather[0].main;
+      const uvValue = uvData.value;
+      const tempDiff = maxTemp - minTemp; // 일교차
+
+      let summary = '';
+      let imageSrc = '';
+      let items = [];
+      let timeTip = '';
+
+      // 1. 기온 기반 기본 옷차림 결정
+      if (maxTemp >= 28) {
+         summary = '푹푹 찌는 더위! 시원한 여름 옷차림이 필수예요.';
+         imageSrc = './assets/icons/uv-index.png';
+         items.push({ icon: '👕', name: '반소매, 민소매' });
+         items.push({ icon: '👖', name: '반바지, 얇은 바지' });
+         items.push({ icon: '👡', name: '샌들, 슬리퍼' });
+      } else if (maxTemp >= 23) {
+         summary =
+            '활동하기 좋은 따뜻한 날씨네요. \n 가벼운 옷차림을 준비하세요.';
+         imageSrc = './assets/icons/uv-index.png';
+         items.push({ icon: '👕', name: '반소매' });
+         items.push({ icon: '👖', name: '면바지, 긴바지' });
+         items.push({ icon: '👟', name: '운동화' });
+      } else if (maxTemp >= 17) {
+         summary = '선선한 봄가을 날씨! 얇은 긴팔 옷이 적당해요.';
+         imageSrc = './assets/icons/uv-index.png';
+         items.push({ icon: '👚', name: '얇은 니트, 맨투맨' });
+         items.push({ icon: '👖', name: '청바지, 슬랙스' });
+      } else if (maxTemp >= 10) {
+         summary = '쌀쌀한 날씨, 여러 겹 겹쳐 입는 걸 추천해요.';
+         imageSrc = './assets/icons/uv-index.png';
+         items.push({ icon: '🧥', name: '자켓, 가디건' });
+         items.push({ icon: '🧣', name: '스카프 (선택)' });
+         items.push({ icon: '👖', name: '따뜻한 바지' });
+      } else {
+         summary = '두툼한 겨울 옷으로 완전 무장! 감기 조심하세요.';
+         imageSrc = './assets/icons/uv-index.png';
+         items.push({ icon: '🧥', name: '패딩, 두꺼운 코트' });
+         items.push({ icon: '🧤', name: '목도리, 장갑' });
+         items.push({ icon: '👢', name: '부츠' });
+      }
+
+      // 2. 추가 조건에 따른 아이템 추가
+      if (tempDiff >= 10) {
+         items.push({ icon: '겉옷', name: '가벼운 겉옷 챙기기' });
+      }
+      if (
+         weatherStatus === 'Rain' ||
+         weatherStatus === 'Drizzle' ||
+         weatherStatus === 'Thunderstorm'
+      ) {
+         items.push({ icon: '☂️', name: '우산 필수!' });
+         items.push({ icon: '👟', name: '젖어도 되는 신발' });
+      }
+      if (uvValue >= 6) {
+         items.push({ icon: '🧴', name: '자외선 차단제' });
+         items.push({ icon: '🧢', name: '모자, 선글라스' });
+      }
+
+      // 3. 시간대별 팁 생성
+      const morningTemp = forecastData.list[0].main.temp; // 아침 기온
+      const afternoonTemp = forecastData.list[3].main.temp; // 약 9시간 후 낮 기온
+      if (afternoonTemp - morningTemp >= 7) {
+         timeTip = `오전에는 ${Math.round(morningTemp)}°로 쌀쌀하지만, 낮에는 ${Math.round(afternoonTemp)}°까지 올라 더워져요. 속에 가벼운 옷을 입고 겉옷을 챙기세요.`;
+      } else {
+         timeTip = `오늘은 큰 기온 변화 없이 비슷한 날씨가 유지될 예정이에요. 활동 계획에 참고하세요!`;
+      }
+
+      // 4. HTML 요소에 데이터 업데이트
+      document.getElementById('outfit-summary').innerText = summary;
+      document.getElementById('outfit-image').src = imageSrc;
+      document.getElementById('time-tip').innerText = timeTip;
+
+      const itemListElement = document.getElementById('item-list');
+      itemListElement.innerHTML = ''; // 기존 목록 비우기
+      items.forEach((item) => {
+         const li = document.createElement('li');
+         li.innerHTML = `<span class="item-icon">${item.icon}</span> <span class="item-name">${item.name}</span>`;
+         itemListElement.appendChild(li);
+      });
+   }
+
+   // ===================================================
+   // UI 업데이트 함수들 (가독성을 위해 기능별로 분리)
+   // ===================================================
+
+   function updateCurrentWeatherUI(weatherData) {
+      const currentTemp = weatherData.main.temp;
+      const feelsLikeTemp = weatherData.main.feels_like;
+      const minTemp = weatherData.main.temp_min;
+      const maxTemp = weatherData.main.temp_max;
+      const humidity = weatherData.main.humidity;
+      const precipitation = weatherData.rain ? weatherData.rain['1h'] : 0;
+      const windSpeed = weatherData.wind.speed;
+      const weatherStatus = weatherData.weather[0].main;
+      const locationName = weatherData.name;
+      const sunriseTimestamp = weatherData.sys.sunrise;
+      const sunsetTimestamp = weatherData.sys.sunset;
+      const customMessage = getCustomWeatherMessage(weatherStatus, currentTemp);
+
+      console.log(
+         `온도: ${currentTemp}°C, 날씨: ${weatherStatus}, 지역: ${locationName}`,
+      );
+
+      updateBackground(weatherStatus);
+      updateSunriseSunset(sunriseTimestamp, sunsetTimestamp);
+
+      document.querySelector('.current-temp').innerText =
+         `${Math.round(currentTemp)}°`;
+      document.querySelector('.feels-like').innerText =
+         `체감 ${Math.round(feelsLikeTemp)}°`;
+      document.querySelector('.minmax-temp').innerText =
+         `최저 ${Math.round(minTemp)}° \n 최고 ${Math.round(maxTemp)}°`;
+      document.querySelector('.wind-speed').innerText = `${windSpeed} m/s`;
+      document.querySelector('.humidity').innerText = `${humidity}%`;
+      document.querySelector('.precipitation').innerText =
+         `${precipitation} mm`;
+      document.querySelector('#weather-desc').innerText = weatherStatus;
+      document.querySelector('.current-location').innerText = locationName;
+      document.querySelector('.weather-description-detail').innerText =
+         customMessage;
+
+      const iconElement = document.querySelector('#weather-icon');
+      if (weatherStatus === 'Clear') {
+         iconElement.src = './assets/icons/uv-index.png';
+      } else if (weatherStatus === 'Clouds') {
+         iconElement.src = './assets/icons/weather-condition.png';
+      } else if (weatherStatus === 'Rain' || weatherStatus === 'Drizzle') {
+         iconElement.src = './assets/icons/hourly-forecast.png';
+      } else if (weatherStatus === 'Thunderstorm') {
+         iconElement.src = './assets/icons/weather-alert.png';
+      } else if (weatherStatus === 'Snow') {
+         iconElement.src = './assets/icons/snow.png';
+      } else if (
+         weatherStatus === 'Mist' ||
+         weatherStatus === 'Haze' ||
+         weatherStatus === 'Fog'
+      ) {
+         iconElement.src = './assets/icons/air-quality.png';
+      } else {
+         iconElement.src = './assets/icons/weather-condition.png';
+      }
+   }
+
+   function updateAirQualityUI(airData) {
+      const aqi = airData.list[0].main.aqi;
+      let aqiText = '';
+      let aqiAdvice = '';
+
+      switch (aqi) {
+         case 1:
+            aqiText = '최고! 아주 좋아요 👍';
+            aqiAdvice = '창문을 활짝 열고 \n 맑은 공기를 만끽하세요!';
+            break;
+         case 2:
+            aqiText = '괜찮아요, 보통이에요 🙂';
+            aqiAdvice = '큰 걱정 없이 편안하게 \n 야외 활동을 즐길 수 있어요.';
+            break;
+         case 3:
+            aqiText = '조금 나쁨 😷';
+            aqiAdvice =
+               '민감하신 분들은 장시간 외출 시 마스크 착용을 고려해 보세요.';
+            break;
+         case 4:
+            aqiText = '나쁨! 주의하세요 😠';
+            aqiAdvice =
+               '가급적 외출을 줄이고, \n 외출 시에는 KF80 이상 마스크를 꼭 착용하세요.';
+            break;
+         case 5:
+            aqiText = '매우 나쁨! 위험해요 👿';
+            aqiAdvice =
+               '오늘은 실내에 머무르는 것이 가장 좋습니다. \n 창문은 꼭 닫아두세요!';
+            break;
+         default:
+            aqiText = '정보 없음';
+            aqiAdvice = '현재 대기 질 정보를 가져올 수 없어요.';
+      }
+
+      console.log(`대기 질: ${aqiText} (AQI: ${aqi})`);
+
+      const airQualityTextElement = document.querySelector('.air-quality-text');
+      const airQualityAdviceElement = document.querySelector(
+         '.air-quality-advice',
+      );
+
+      if (airQualityTextElement && airQualityAdviceElement) {
+         airQualityTextElement.innerText = aqiText;
+         airQualityAdviceElement.innerText = aqiAdvice;
+      }
+   }
+
+   // ===================================================
+   // 기타 유틸리티 및 기능 함수들
+   // ===================================================
+
    function getCustomWeatherMessage(status, temp) {
       switch (status) {
          case 'Clear':
-            if (temp > 25) return '쨍한 햇살이 기분 좋은 날이에요! ☀️\n가벼운 옷차림으로 상쾌한 하루를 만끽해 보세요.';
+            if (temp > 25)
+               return '쨍한 햇살이 기분 좋은 날이에요! ☀️\n가벼운 옷차림으로 상쾌한 하루를 만끽해 보세요.';
             if (temp > 15)
                return '청명한 하늘 아래, 완벽한 산책 날씨네요.\n잠깐이라도 밖에서 가을 공기를 느껴보는 건 어떠세요?';
             return '하늘은 맑지만 공기가 제법 차가워요.\n따뜻한 외투 하나 꼭 챙겨서 감기 조심하세요!';
@@ -217,25 +443,26 @@ document.addEventListener('DOMContentLoaded', () => {
       }
    }
 
-   /**
-    * 동적 배경 업데이트 함수
-    */
    function updateBackground(status) {
       const todayContainer = document.querySelector('.today-container');
+      if (!todayContainer) return;
       let imageUrl = './assets/images/section02/default.png';
       if (status === 'Clear') imageUrl = './assets/images/section02/clear.jpg';
-      else if (status === 'Clouds') imageUrl = './assets/images/section02/clouds.jpg';
-      else if (status === 'Rain' || status === 'Drizzle' || status === 'Thunderstorm')
+      else if (status === 'Clouds')
+         imageUrl = './assets/images/section02/clouds.jpg';
+      else if (
+         status === 'Rain' ||
+         status === 'Drizzle' ||
+         status === 'Thunderstorm'
+      )
          imageUrl = './assets/images/section02/rain.jpg';
-      else if (status === 'Snow') imageUrl = './assets/images/section02/snow.jpg';
+      else if (status === 'Snow')
+         imageUrl = './assets/images/section02/snow.jpg';
       else if (status === 'Mist' || status === 'Haze' || status === 'Fog')
          imageUrl = './assets/images/section02/fog.jpg';
       todayContainer.style.backgroundImage = `url(${imageUrl})`;
    }
 
-   /**
-    * 일출/일몰 타임라인 업데이트 함수
-    */
    function updateSunriseSunset(sunriseTimestamp, sunsetTimestamp) {
       const sunriseTime = formatTime(sunriseTimestamp);
       const sunsetTime = formatTime(sunsetTimestamp);
@@ -249,9 +476,6 @@ document.addEventListener('DOMContentLoaded', () => {
       document.querySelector('.sun-progress-bar').style.width = `${progress}%`;
    }
 
-   /**
-    * 타임스탬프 변환 도우미 함수
-    */
    function formatTime(timestamp) {
       const date = new Date(timestamp * 1000);
       const hours = date.getHours().toString().padStart(2, '0');
@@ -259,152 +483,105 @@ document.addEventListener('DOMContentLoaded', () => {
       return `${hours}:${minutes}`;
    }
 
-   // ===================================================
-   // 5. [추가] 신규 기능 함수 정의 (실시간 시계)
-   // ===================================================
-
-   /**
-    * ✨ [핵심 기능 3] 실시간 시계 업데이트 함수
-    * 1초마다 현재 시간을 가져와 화면에 표시합니다.
-    */
    function updateClock() {
-      // 1. 현재 시간 정보를 가진 Date 객체를 생성합니다.
       const now = new Date();
-      // 2. 시간, 분, 초를 가져옴
       const hours = now.getHours().toString().padStart(2, '0');
       const minutes = now.getMinutes().toString().padStart(2, '0');
       const seconds = now.getSeconds().toString().padStart(2, '0');
-
-      // 3. 시간을 표시할 HTML 요소를 선택
       const timeElement = document.querySelector('.current-time');
-
-      // 4. 요소가 존재한다면 형태로 텍스트를 업데이트합니다.
       if (timeElement) {
          timeElement.innerText = `${hours}:${minutes}:${seconds}`;
       }
    }
 
-   /* 시간별 예보 */
    function updateHourlyForecast(forecastList) {
       const sliderTrack = document.querySelector('.slider-track');
-
-      // 앞으로 24시간 예보를 위한 배열을 자르기
+      if (!sliderTrack) return;
       const next24Hours = forecastList.slice(0, 8);
-
-      let hourlyHtml = ''; // 카드 담을 빈 문자열
-
+      let hourlyHtml = '';
       next24Hours.forEach((item, index) => {
-         // 1. 시간 데이터
          const date = new Date(item.dt * 1000);
          const hours = date.getHours();
          const timeString = `${hours}시`;
-
-         // 2. 날씨 아이콘 url
          const iconCode = item.weather[0].icon;
          const iconUrl = `https://openweathermap.org/img/wn/${iconCode}@2x.png`;
-
-         // 3. 온도데이터
          const temp = Math.round(item.main.temp);
-
-         // 시간대별 강조하기
          const isNow = index === 0 ? 'now' : '';
-
-         // 4. 각 시간대별 카드
          hourlyHtml += `
          <div class="hourly-item ${isNow}">
             <span class="item"> ${timeString}</span>
             <img src="${iconUrl}" alt="${item.weather[0].description}" class="weather-icon"> 
             <span class="temp">${temp}°</span>
-    
          </div>`;
       });
-
       sliderTrack.innerHTML = hourlyHtml;
    }
 
    function drawTempChart(forecastList) {
-      // 1. 차트에 필요한 데이터 추출하고 새로운 배열 만들기
-      const next24Hours = forecastList.slice(0, 8); // ㅇ슬라이더와 동일하게 24시간 데이터 사용하기위해
-
-      // X축 라벨 시간 배열
-      const labels = next24Hours.map(item => {
-         const hours = new Date(item.dt * 1000).getHours();
-         return `${hours}시`;
-      });
-
-      // y축 데이터 온도 배열
-      const temperatures = next24Hours.map(item => item.main.temp);
-
-      // 2. 차트를 그릴 canvas 요소
       const ctx = document.querySelector('#temp-chart');
+      if (!ctx) return;
 
-      // 3. Chart.js를 사용하여 차트 생성
+      if (ctx.chart) {
+         ctx.chart.destroy();
+      }
 
-      new Chart(ctx, {
-         type: 'line', // 차트 종류: 꺾은선 그래프
+      const next24Hours = forecastList.slice(0, 8);
+      const labels = next24Hours.map(
+         (item) => `${new Date(item.dt * 1000).getHours()}시`,
+      );
+      const temperatures = next24Hours.map((item) => item.main.temp);
+
+      ctx.chart = new Chart(ctx, {
+         type: 'line',
          data: {
-            labels: labels, // x축 라벨
+            labels: labels,
             datasets: [
                {
-                  label: '온도(°C)', // 데이터의 이름
-                  data: temperatures, // y축 데이터
-                  borderColor: '#ff6b6b', // 선 색상
-                  backgroundColor: 'rgba(255, 107, 107, 0.2)', // 선 아래 영역 색상
-                  tension: 0.4, // 선의 부드러운 곡선
-                  fill: true, // 선 아래 영역을 채울지 여부
-                  pointBackgroundColor: '#ff6b6b', // 각 데이터 지점의 색상
-                  pointBorderColor: '#fff', // 지점의 테두리 색상
-                  pointHoverRadius: 10, // 마우스 올렸을 때 지점 크기
+                  label: '온도(°C)',
+                  data: temperatures,
+                  borderColor: '#ff6b6b',
+                  backgroundColor: 'rgba(255, 107, 107, 0.2)',
+                  tension: 0.4,
+                  fill: true,
+                  pointBackgroundColor: '#ff6b6b',
+                  pointBorderColor: '#fff',
+                  pointHoverRadius: 7,
                },
             ],
          },
          options: {
-            responsive: true, // 반응형으로 크기 조절
+            responsive: true,
+            maintainAspectRatio: false,
             plugins: {
-               legend: {
-                  display: false, // 데이터 라벨(범례) 숨기기
-               },
+               legend: { display: false },
+               tooltip: { enabled: false },
             },
             onHover: (event, chartElement) => {
-               document.querySelectorAll('.hourly-item').forEach(item => {
-                  item.classList.remove('hover');
-               });
-
+               document
+                  .querySelectorAll('.hourly-item')
+                  .forEach((item) => item.classList.remove('hover'));
                if (chartElement.length > 0) {
                   const dataIndex = chartElement[0].index;
-                  const targetCard = document.querySelectorAll('.hourly-item')[dataIndex];
-                  if (targetCard) {
-                     targetCard.classList.add('hover');
-                  }
+                  const targetCard =
+                     document.querySelectorAll('.hourly-item')[dataIndex];
+                  if (targetCard) targetCard.classList.add('hover');
                }
             },
             scales: {
-               x: {
-                  grid: {
-                     display: false, // x축 격자선 숨기기
-                  },
-               },
-               y: {
-                  grid: {
-                     display: false, // y축 격자선 숨기기
-                  },
-                  ticks: {
-                     display: false, // y축 눈금 숫자 숨기기
-                  },
-               },
+               x: { grid: { display: false } },
+               y: { display: false, beginAtZero: false },
             },
          },
       });
    }
 
-   // 주간 예보 목록
    function updateWeeklyForecast(forecastList) {
       const weeklyListElement = document.querySelector('.weekly-forecast-list');
+      if (!weeklyListElement) return;
       weeklyListElement.innerHTML = '';
 
-      // 1. 3시간 데이터를 날짜별로 그룹화하는 로직
       const dailyData = {};
-      forecastList.forEach(item => {
+      forecastList.forEach((item) => {
          const date = new Date(item.dt * 1000).toLocaleDateString();
          if (!dailyData[date]) {
             dailyData[date] = [];
@@ -412,30 +589,28 @@ document.addEventListener('DOMContentLoaded', () => {
          dailyData[date].push(item);
       });
 
-      // 2. 그룹화된 데이터를 기반으로 HTML 생성
+      let dayCount = 0;
       for (const date in dailyData) {
+         if (dayCount >= 5) break; // 5일치만 표시
          const dayForecast = dailyData[date];
-
-         // 해당 날짜의 최고/최저 기온 계산
-         const minTemp = Math.min(...dayForecast.map(item => item.main.temp_min));
-         const maxTemp = Math.max(...dayForecast.map(item => item.main.temp_max));
-
-         // 대표 날씨 아이콘
-         const representativeWeather = dayForecast[Math.floor(dayForecast.length / 2)].weather[0];
+         const minTemp = Math.min(
+            ...dayForecast.map((item) => item.main.temp_min),
+         );
+         const maxTemp = Math.max(
+            ...dayForecast.map((item) => item.main.temp_max),
+         );
+         const representativeWeather =
+            dayForecast[Math.floor(dayForecast.length / 2)].weather[0];
          const iconUrl = `https://openweathermap.org/img/wn/${representativeWeather.icon}@2x.png`;
-
-         // 요일 구하기
-         const dayOfWeek = new Date(dayForecast[0].dt * 1000).toLocaleDateString('ko-KR', { weekday: 'long' });
-
-         // 아코디언 상세 정보 HTML
+         const dayOfWeek = new Date(
+            dayForecast[0].dt * 1000,
+         ).toLocaleDateString('ko-KR', { weekday: 'long' });
          const detailHtml = dayForecast
             .map(
-               item => `
-            <p>${new Date(item.dt * 1000).getHours()}시: ${Math.round(item.main.temp)}°    ${item.weather[0].description}</p>
-         `,
+               (item) =>
+                  `<p>${new Date(item.dt * 1000).getHours()}시: ${Math.round(item.main.temp)}° - ${item.weather[0].description}</p>`,
             )
             .join('');
-
          const weeklyItemHtml = `
             <div class="weekly-item">
                <div class="item-header">
@@ -443,25 +618,26 @@ document.addEventListener('DOMContentLoaded', () => {
                   <img src="${iconUrl}" alt="${representativeWeather.description}" class="weather-icon">
                   <span class="temp-range">${Math.round(minTemp)}° / ${Math.round(maxTemp)}°</span>
                </div>
-               <div class="item-details">
-                 ${detailHtml}
-               </div>
-            </div>
-         `;
+               <div class="item-details">${detailHtml}</div>
+            </div>`;
          weeklyListElement.innerHTML += weeklyItemHtml;
+         dayCount++;
       }
 
-      // 3. 아코디언 클릭 이벤트 추가
-      document.querySelectorAll('.weekly-item .item-header').forEach(header => {
-         header.addEventListener('click', () => {
-            header.parentElement.classList.toggle('active');
+      document
+         .querySelectorAll('.weekly-item .item-header')
+         .forEach((header) => {
+            header.addEventListener('click', () => {
+               const currentItem = header.parentElement;
+               document.querySelectorAll('.weekly-item').forEach((item) => {
+                  if (item !== currentItem) item.classList.remove('active');
+               });
+               currentItem.classList.toggle('active');
+            });
          });
-      });
    }
 
-   // 색션 5 생활지수
-   function updateLifestyleInfo(weatherData, airData, uvDate) {
-      // 1. 자외선 지수 카드
+   function updateLifestyleInfo(weatherData, uvDate) {
       const uvValue = uvDate.value;
       const uvCard = document.getElementById('uv-card');
       const uvValueElement = uvCard.querySelector('.uv-value');
@@ -470,7 +646,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const windSpeed = weatherData.wind.speed;
 
       uvValueElement.innerText = uvValue;
-      uvCard.classList.remove('uv-moderate', 'uv-high', 'uv-very-high'); // 기존 클래스 초기화
+      uvCard.className = 'lifestyle-card';
 
       const windAdviceElement = document.querySelector('.wind-advice');
       if (windSpeed > 10.8) {
@@ -482,26 +658,27 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       if (uvValue >= 8) {
-         uvAdviceElement.innerText = '매우 높음! 장시간 노출은 피하고, 외출 시 꼭 대비하세요.';
+         uvAdviceElement.innerText =
+            '매우 높음! 장시간 노출은 피하고, 외출 시 꼭 대비하세요.';
          uvCard.classList.add('uv-very-high');
       } else if (uvValue >= 6) {
-         uvAdviceElement.innerText = '높음! 선크림을 꼭 바르고, 모자를 착용하는 것이 좋습니다.';
+         uvAdviceElement.innerText =
+            '높음! 선크림을 꼭 바르고, 모자를 착용하는 것이 좋습니다.';
          uvCard.classList.add('uv-high');
       } else if (uvValue >= 3) {
-         uvAdviceElement.innerText = '보통. 장시간 야외 활동 시 주의가 필요해요.';
+         uvAdviceElement.innerText =
+            '보통. 장시간 야외 활동 시 주의가 필요해요.';
          uvCard.classList.add('uv-moderate');
       } else {
-         uvAdviceElement.innerText = '낮음. 자외선 걱정 없이 야외 활동을 즐기세요!';
+         uvAdviceElement.innerText =
+            '낮음. 자외선 걱정 없이 야외 활동을 즐기세요!';
       }
 
-      // --- 2. 기타 생활 지수 카드 업데이트 ---
-      document.querySelector('.feels-like-value').innerText = `${Math.round(weatherData.main.feels_like)}°`;
-      document.querySelector('.wind-speed-value').innerText = `${weatherData.wind.speed} m/s`;
-      document.querySelector('.humidity-value').innerText = `${weatherData.main.humidity}%`;
+      document.querySelector('.feels-like-value').innerText =
+         `${Math.round(weatherData.main.feels_like)}°`;
+      document.querySelector('.wind-speed-value').innerText =
+         `${weatherData.wind.speed} m/s`;
       document.querySelector('.humidity-value').innerText = `${humidity}%`;
       document.querySelector('.humidity-gauge').style.width = `${humidity}%`;
-      document.querySelector('.wind-speed-value').innerText = `${windSpeed} m/s`;
    }
-
-   // end
-});
+}

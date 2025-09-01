@@ -40,14 +40,13 @@ header {
    left: 0;
    width: 100%;
    height: 100%;
-
    z-index: 1;
 }
 
 /* ----- S2 (Today) ----- */
 .today-container {
    width: 100%;
-   padding: 4rem 0rem;
+   padding: 4rem 1rem;
    background-image: url(../assets/images/section02/default.png);
    background-position: center center;
    background-repeat: no-repeat;
@@ -63,7 +62,7 @@ header {
 .weather-card-container {
    width: 100%;
    max-width: 500px;
-   padding: 0 2rem;
+   padding: 0 1rem;
 }
 
 /* ----- S3 (Hourly) ----- */
@@ -110,29 +109,21 @@ header {
 /* ----- S6 (Map) ----- */
 .weather-map-container {
    width: 100%;
-   height: 100vh;
-   background-color: burlywood;
+   padding: 4rem 1rem;
+   background-color: #f9f9f9;
 }
 
 /* ----- S7 (Outfit) ----- */
 .outfit-container {
    width: 100%;
-   height: 100vh;
-   background-color: cadetblue;
-}
-
-/* ----- S8 (Footer) ----- */
-footer {
-   width: 100%;
-   height: 6vh;
-   background-color: brown;
-   display: none;
+   padding: 4rem 1rem;
+   background-color: #f0f8ff;
 }
 
 /* ----- Animations ----- */
 @keyframes slow-zoom {
    from {
-      transform: scale(1);
+      transform: scale(1.5);
    }
    to {
       transform: scale(1.05);
@@ -143,59 +134,53 @@ footer {
 /* 2. 태블릿 (768px 이상)                              */
 /* =================================================== */
 @media (min-width: 768px) {
-   .main-container {
-      height: 100vh;
-      width: 100%;
-   }
-
+   /* ----- S2 (Today) ----- */
+   /* Today 섹션을 전체 화면 높이로 설정하여 몰입감을 줍니다. */
    .today-container {
       height: 100vh;
-      padding: 0;
-      width: 100%;
+      padding: 0 2rem;
    }
 
    .main-bg {
       padding: 0 2rem;
    }
-   /* ----- S3 (Hourly) ----- */
-   .hourly-container {
-      width: 100%;
-      padding: 4rem 0;
-      background-color: #f4f7fa;
-   }
 
-   .hourly-content-wrapper {
-      width: 100%;
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 0 1rem;
-   }
-   /* ----- S4 (Weekly) ----- */
+   /* ----- S3 (Hourly) & S4 (Weekly) ----- */
+   /* 섹션의 상하 패딩을 늘려 시원한 느낌을 줍니다. */
+   .hourly-container,
    .weekly-container {
-      width: 100%;
-      height: 100vh;
-      background-color: aquamarine;
+      padding: 6rem 0;
    }
 
    /* ----- S5 (Details) ----- */
+   /* Details 섹션을 화면 전체 높이로 채워 각 섹션이 명확히 구분되도록 합니다. */
    .lifestyle-container {
-      width: 100%;
-      height: 100vh;
-      background-color: blueviolet;
+      min-height: 70vh;
+      display: flex; /* 자식 요소를 중앙 정렬하기 위해 flex 사용 */
+      align-items: center;
+      padding: 6rem 2rem;
    }
 
    /* ----- S6 (Map) ----- */
+   /* Map 섹션도 화면 전체 높이를 차지하게 하여 지도가 더 넓게 보이도록 합니다. */
    .weather-map-container {
-      width: 100%;
-      height: 100vh;
-      background-color: burlywood;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column; /* 자식 요소들을 세로로 정렬 */
+      justify-content: center; /* 수직 중앙 정렬 */
+      align-items: center; /* 수평 중앙 정렬 */
+      padding: 0rem;
    }
 
    /* ----- S7 (Outfit) ----- */
+   /* Outfit 섹션도 화면 전체 높이로 설정하여 마지막 조언에 집중할 수 있도록 합니다. */
    .outfit-container {
-      width: 100%;
-      height: 100vh;
-      background-color: cadetblue;
+      min-height: 50vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 2rem;
    }
 }
 
@@ -203,4 +188,17 @@ footer {
 /* 3. 데스크탑 (1024px 이상)                           */
 /* =================================================== */
 @media (min-width: 1024px) {
+   /* 데스크탑에서는 대부분 태블릿 스타일을 유지하되,
+      더 넓은 화면을 활용하기 위해 최대 너비(max-width) 등을 조정할 수 있습니다.
+      현재 레이아웃은 데스크탑에서도 충분히 잘 작동하므로 추가적인 큰 변경은 필요하지 않습니다.
+      만약 특정 섹션의 폰트 크기나 최대 너비를 조정하고 싶다면 여기에 추가하면 됩니다. */
+
+   .weather-card-container {
+      max-width: 600px; /* 데스크탑에서 날씨 정보 카드의 최대 너비를 조금 더 키움 */
+   }
+
+   .hourly-content-wrapper,
+   .lifestyle-content-wrapper {
+      padding: 0 2rem; /* 좌우 여백을 더 확보 */
+   }
 }
